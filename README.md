@@ -1,5 +1,7 @@
 # Isaque Félix · Full Stack Developer & AI Engineer
 
+**Portfolio:** [isaquefl.github.io/isaquefl](https://isaquefl.github.io/isaquefl/)
+
 Especializado em sistemas escaláveis e integração com LLMs (Llama/Groq). Foco em performance-first e código limpo.
 
 ---
