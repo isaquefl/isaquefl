@@ -117,67 +117,215 @@
 
   initCodeBackground();
 
-  // ----- Projetos: buscar repositórios do GitHub -----
-  var GITHUB_USER = 'isaquefl';
+  // ===================================================================
+  //  PROJETOS — GitHub + Supabase (backoffice)
+  //  Junta automaticamente os repositórios do GitHub com os ajustes do
+  //  backoffice (descrições, marcadores/badges, destaques, projetos
+  //  manuais de Vercel/Cloudflare e itens ocultos).
+  // ===================================================================
+  var CFG = window.PORTFOLIO_CONFIG || {};
+  var GITHUB_USER = CFG.githubUser || 'isaquefl';
   var projectsList = document.getElementById('projects-list');
   var projectsLoading = document.getElementById('projects-loading');
+  var featuredWrap = document.getElementById('projects-featured');
+  var reposTitleEl = document.getElementById('projects-repos-title');
+  var reposSubtitleEl = document.getElementById('projects-repos-subtitle');
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text == null ? '' : text;
+    return div.innerHTML;
+  }
 
   function formatDate(str) {
     if (!str) return '';
     var d = new Date(str);
+    if (isNaN(d)) return '';
     var months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     return months[d.getMonth()] + '/' + d.getFullYear();
   }
 
-  function renderProjects(repos) {
-    if (!projectsList) return;
-    projectsList.removeChild(projectsLoading);
-    if (!repos || repos.length === 0) {
-      projectsList.innerHTML = '<p class="projects-empty">Nenhum repositório público ainda. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
-      return;
-    }
-    repos.forEach(function (repo) {
-      var card = document.createElement('a');
-      card.href = repo.html_url;
+  // Detecta onde o projeto está hospedado a partir da URL (para o marcador).
+  function hostBadge(url) {
+    if (!url) return null;
+    if (/vercel\.app/i.test(url)) return { label: 'Vercel', color: 'slate' };
+    if (/pages\.dev/i.test(url)) return { label: 'Cloudflare', color: 'amber' };
+    if (/github\.io/i.test(url)) return { label: 'GitHub Pages', color: 'slate' };
+    return null;
+  }
+
+  function badgesHtml(badges) {
+    if (!badges || !badges.length) return '';
+    var html = badges.map(function (b) {
+      if (!b || !b.label) return '';
+      var color = (b.color || 'slate').toLowerCase();
+      return '<span class="badge badge-' + escapeHtml(color) + '">' + escapeHtml(b.label) + '</span>';
+    }).join('');
+    return html ? '<div class="project-badges">' + html + '</div>' : '';
+  }
+
+  // Constrói um card de projeto (usado para destaques e repositórios).
+  function buildCard(p) {
+    var hasLink = !!p.url;
+    var card = document.createElement(hasLink ? 'a' : 'article');
+    card.className = 'project-card' + (p.featured ? ' project-card-featured' : '');
+    if (hasLink) {
+      card.href = p.url;
       card.target = '_blank';
       card.rel = 'noopener noreferrer';
-      card.className = 'project-card';
-      card.innerHTML =
-        '<span class="project-name">' + escapeHtml(repo.name) + '</span>' +
-        (repo.description ? '<p class="project-desc">' + escapeHtml(repo.description) + '</p>' : '') +
-        '<div class="project-meta">' +
-        (repo.language ? '<span class="project-lang">' + escapeHtml(repo.language) + '</span>' : '') +
-        (repo.updated_at ? '<span class="project-date">' + formatDate(repo.updated_at) + '</span>' : '') +
-        '</div>';
-      projectsList.appendChild(card);
+    }
+    if (p.description) {
+      card.setAttribute('data-tooltip', p.description);
+      card.classList.add('has-tooltip');
+    }
+
+    var meta = [];
+    if (p.language) meta.push('<span class="project-lang">' + escapeHtml(p.language) + '</span>');
+    if (p.repo_url && p.url && p.repo_url !== p.url) {
+      meta.push('<a class="project-sublink" href="' + escapeHtml(p.repo_url) + '" target="_blank" rel="noopener noreferrer">Código</a>');
+    }
+    if (p.date) meta.push('<span class="project-date">' + formatDate(p.date) + '</span>');
+
+    card.innerHTML =
+      '<span class="project-name">' + escapeHtml(p.title) + '</span>' +
+      badgesHtml(p.badges) +
+      (p.description ? '<p class="project-desc">' + escapeHtml(p.description) + '</p>' : '') +
+      (meta.length ? '<div class="project-meta">' + meta.join('') + '</div>' : '');
+    return card;
+  }
+
+  // Busca os dados do backoffice (Supabase REST). Falha de forma segura.
+  function fetchOverrides() {
+    if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) {
+      return Promise.resolve({ projects: [], settings: {} });
+    }
+    var headers = { apikey: CFG.supabaseAnonKey, Authorization: 'Bearer ' + CFG.supabaseAnonKey };
+    var base = CFG.supabaseUrl.replace(/\/$/, '');
+    var pReq = fetch(base + '/rest/v1/projects?select=*&order=position.asc', { headers })
+      .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    var sReq = fetch(base + '/rest/v1/settings?key=eq.site&select=value', { headers })
+      .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    return Promise.all([pReq, sReq]).then(function (res) {
+      var settings = (Array.isArray(res[1]) && res[1][0] && res[1][0].value) || {};
+      return { projects: Array.isArray(res[0]) ? res[0] : [], settings: settings };
     });
   }
 
-  function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+  function fetchRepos() {
+    return fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=100&type=owner')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (d) { return Array.isArray(d) ? d.filter(function (x) { return !x.fork; }) : []; })
+      .catch(function () { return null; }); // null = erro de rede; [] = vazio
   }
 
-  function showProjectsError() {
-    if (!projectsList || !projectsLoading) return;
-    projectsList.removeChild(projectsLoading);
-    projectsList.innerHTML = '<p class="projects-empty">Não foi possível carregar os repositórios. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver projetos no GitHub</a>.</p>';
+  function applySettings(settings) {
+    if (reposTitleEl && settings.reposTitle) reposTitleEl.textContent = settings.reposTitle;
+    if (reposSubtitleEl && settings.reposSubtitle) reposSubtitleEl.textContent = settings.reposSubtitle;
+    var fTitle = document.getElementById('projects-featured-title');
+    if (fTitle && settings.featuredTitle) fTitle.textContent = settings.featuredTitle;
   }
 
-  if (projectsList && projectsLoading) {
-    fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=30&type=owner')
-      .then(function (res) {
-        if (!res.ok) throw new Error(res.status);
-        return res.json();
-      })
-      .then(function (data) {
-        var repos = Array.isArray(data) ? data.filter(function (r) { return !r.fork; }) : [];
-        renderProjects(repos);
-      })
-      .catch(function () {
-        showProjectsError();
+  function buildList(repos, data) {
+    var overrides = data.projects || [];
+    var settings = data.settings || {};
+    var byRepo = {};
+    var manual = [];
+    overrides.forEach(function (o) {
+      if (o.kind === 'manual') manual.push(o);
+      else byRepo[(o.key || '').toLowerCase()] = o;
+    });
+
+    var items = [];
+
+    // 1) Repositórios do GitHub + ajustes do backoffice
+    if (settings.showGithubRepos !== false && Array.isArray(repos)) {
+      repos.forEach(function (repo) {
+        var ov = byRepo[repo.name.toLowerCase()] || {};
+        if (ov.hidden) return; // ocultado no backoffice
+        var live = ov.url || repo.homepage || '';
+        var badges = (ov.badges && ov.badges.length) ? ov.badges.slice() : [];
+        // Marcador automático "Online" para projetos com deploy.
+        if (live) {
+          var hb = hostBadge(live);
+          if (!badges.some(function (b) { return b && /online/i.test(b.label); })) {
+            badges.unshift({ label: 'Online', color: 'green' });
+          }
+          if (hb && !badges.some(function (b) { return b && b.label === hb.label; })) badges.push(hb);
+        }
+        items.push({
+          title: ov.title || repo.name,
+          description: ov.description || repo.description || '',
+          url: live || repo.html_url,
+          repo_url: repo.html_url,
+          language: ov.language || repo.language || '',
+          badges: badges,
+          featured: !!ov.featured,
+          position: typeof ov.position === 'number' ? ov.position : 1000,
+          date: repo.updated_at
+        });
       });
+    }
+
+    // 2) Projetos manuais do backoffice (Vercel/Cloudflare sem repo público, etc.)
+    manual.forEach(function (m) {
+      if (m.hidden) return;
+      var badges = (m.badges && m.badges.length) ? m.badges.slice() : [];
+      if (m.url) {
+        var hb = hostBadge(m.url);
+        if (hb && !badges.some(function (b) { return b && b.label === hb.label; })) badges.push(hb);
+      }
+      items.push({
+        title: m.title || m.key,
+        description: m.description || '',
+        url: m.url || '',
+        repo_url: m.repo_url || '',
+        language: m.language || '',
+        badges: badges,
+        featured: !!m.featured,
+        position: typeof m.position === 'number' ? m.position : 0,
+        date: m.updated_at
+      });
+    });
+
+    items.sort(function (a, b) { return (a.position - b.position) || 0; });
+    return items;
+  }
+
+  function render(items) {
+    var featured = items.filter(function (i) { return i.featured; });
+    var normal = items.filter(function (i) { return !i.featured; });
+
+    // Destaques
+    var featuredTitle = document.getElementById('projects-featured-title');
+    if (featuredWrap) {
+      featuredWrap.innerHTML = '';
+      featured.forEach(function (p) { featuredWrap.appendChild(buildCard(p)); });
+    }
+    if (featuredTitle) featuredTitle.style.display = featured.length ? '' : 'none';
+
+    // Repositórios / demais
+    if (projectsList) {
+      projectsList.innerHTML = '';
+      if (!normal.length && !featured.length) {
+        projectsList.innerHTML = '<p class="projects-empty">Nenhum projeto ainda. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
+        return;
+      }
+      normal.forEach(function (p) { projectsList.appendChild(buildCard(p)); });
+    }
+  }
+
+  if (projectsList) {
+    Promise.all([fetchRepos(), fetchOverrides()]).then(function (res) {
+      var repos = res[0];
+      var data = res[1];
+      applySettings(data.settings || {});
+      if (repos === null && (!data.projects || !data.projects.length)) {
+        if (projectsLoading && projectsLoading.parentNode) projectsLoading.remove();
+        projectsList.innerHTML = '<p class="projects-empty">Não foi possível carregar os projetos agora. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
+        return;
+      }
+      render(buildList(repos || [], data));
+    });
   }
 
   // ----- Animações no scroll (moderadas) -----

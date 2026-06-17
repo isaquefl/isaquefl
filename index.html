@@ -16,7 +16,7 @@
   <meta property="og:description" content="Full Stack Developer · Desenvolvedor Full Stack. Systems Analysis &amp; Development, IT Technician. Backend &amp; frontend: JavaScript, TypeScript, Python, React, Node.js. Professional portfolio.">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:locale:alternate" content="en_US">
-  <!-- Ao publicar o site, adicione: <meta property="og:url" content="https://seusite.com/"> e <meta property="og:image" content="https://seusite.com/imagem-1200x630.jpg"> -->
+  <meta property="og:url" content="https://isaquefl.vercel.app/">
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Isaque Félix | Portfolio">
@@ -246,17 +246,13 @@
       <h2 class="section-title" data-animate>Meus projetos</h2>
       <p class="section-subtitle" data-animate>Repositórios no GitHub.</p>
 
-      <div class="projects-featured" data-animate>
-        <article class="project-card project-card-featured project-card-special">
-          <span class="project-name">Aptos</span>
-          <p class="project-desc">Rede de ensino e gestão para instrutores. Projeto ativo, criação em colaboração; código fechado.</p>
-          <div class="project-meta"><span class="project-lang">Projeto em destaque</span></div>
-        </article>
-      </div>
+      <h3 class="projects-featured-title" id="projects-featured-title" data-animate>Projetos em destaque</h3>
+      <div id="projects-featured" class="projects-featured" data-animate aria-live="polite"></div>
 
-      <h3 class="projects-repos-title" data-animate>Repositórios</h3>
+      <h3 class="projects-repos-title" id="projects-repos-title" data-animate>Repositórios</h3>
+      <p class="section-subtitle projects-repos-subtitle" id="projects-repos-subtitle" data-animate>Repositórios públicos no GitHub.</p>
       <div id="projects-list" class="projects-grid" data-animate aria-live="polite">
-        <p class="projects-loading" id="projects-loading">Carregando repositórios…</p>
+        <p class="projects-loading" id="projects-loading">Carregando projetos…</p>
       </div>
     </div>
   </section>
@@ -299,6 +295,7 @@
 
   </div><!-- /.main-content -->
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
