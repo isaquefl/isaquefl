@@ -8,7 +8,7 @@
  * Banco: projeto Supabase "isaquefl-portfolio".
  */
 window.PORTFOLIO_CONFIG = {
-  supabaseUrl: 'https://oworaejchdnaxlofjmjd.supabase.co',
-  supabaseAnonKey: 'sb_publishable_dH24YbVVDB6fSquuRVcaQw_y8BuD8e4',
+  supabaseUrl: 'https://dukjiqobwifymjqnwjtq.supabase.co',
+  supabaseAnonKey: 'sb_publishable_NGrp2ncESspWwlHL5BlkDw_LvGeqBYh',
   githubUser: 'isaquefl'
 };
