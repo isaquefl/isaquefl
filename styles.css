@@ -906,3 +906,59 @@ ul {
   color: var(--color-text-muted);
   font-size: 0.85rem;
 }
+
+/* ========== POLIMENTO DE INTERAÇÕES ========== */
+.card,
+.course-item,
+.project-card,
+.contact-card {
+  will-change: transform;
+}
+
+.card:hover,
+.course-item:hover,
+.contact-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.project-card.has-tooltip:hover,
+.project-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.project-card-featured:hover {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+}
+
+.btn-primary {
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), transform var(--transition);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+/* link "Código" dentro do meta não deve herdar o translate do card */
+.project-meta { position: relative; z-index: 2; }
+
+/* estado de foco acessível e consistente */
+a:focus-visible,
+.btn:focus-visible,
+.project-card:focus-visible,
+.contact-card:focus-visible {
+  outline: 2px solid var(--color-text-muted);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .course-item, .project-card, .contact-card, .btn-primary {
+    transition: none;
+  }
+  .card:hover, .course-item:hover, .project-card:hover, .contact-card:hover {
+    transform: none;
+  }
+}

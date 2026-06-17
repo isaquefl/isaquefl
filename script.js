@@ -218,11 +218,57 @@
       .catch(function () { return null; }); // null = erro de rede; [] = vazio
   }
 
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el && value != null && value !== '') el.textContent = value;
+  }
+  function setHtml(id, value) {
+    var el = document.getElementById(id);
+    if (el && value != null && value !== '') el.innerHTML = value;
+  }
+  function setContact(id, href, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (href) el.setAttribute('href', href);
+    if (value != null && value !== '') {
+      var v = el.querySelector('.contact-value');
+      if (v) v.textContent = value;
+    }
+  }
+
   function applySettings(settings) {
     if (reposTitleEl && settings.reposTitle) reposTitleEl.textContent = settings.reposTitle;
     if (reposSubtitleEl && settings.reposSubtitle) reposSubtitleEl.textContent = settings.reposSubtitle;
     var fTitle = document.getElementById('projects-featured-title');
     if (fTitle && settings.featuredTitle) fTitle.textContent = settings.featuredTitle;
+
+    // ----- Conteúdo do site (tudo editável pelo backoffice) -----
+    var hero = settings.hero || {};
+    setText('hero-name', hero.name);
+    setText('hero-role', hero.role);
+    setText('hero-tagline', hero.tagline);
+    setText('hero-cta', hero.ctaText);
+
+    var about = settings.about || {};
+    // permite **negrito** simples no texto do sobre
+    if (about.pt) setHtml('about-pt', mdBold(about.pt));
+    if (about.en) setHtml('about-en', mdBold(about.en));
+
+    var c = settings.contact || {};
+    if (c.email) setContact('contact-email', 'mailto:' + c.email, c.email);
+    if (c.whatsapp) {
+      var digits = String(c.whatsapp).replace(/\D/g, '');
+      setContact('contact-whatsapp', 'https://wa.me/' + digits, c.whatsappLabel || c.whatsapp);
+    }
+    if (c.linkedin) setContact('contact-linkedin', c.linkedin, c.linkedinLabel || handleFromUrl(c.linkedin));
+    if (c.github) setContact('contact-github', c.github, c.githubLabel || handleFromUrl(c.github));
+  }
+
+  function mdBold(text) {
+    return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+  function handleFromUrl(url) {
+    return String(url).replace(/\/$/, '').split('/').pop();
   }
 
   function buildList(repos, data) {
