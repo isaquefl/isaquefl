@@ -1,6 +1,7 @@
 /**
  * Portfolio - Isaque Félix
- * Menu mobile, scroll suave para seções, F5 mantém posição, fundo com código.
+ * Menu mobile, scroll suave, F5 mantém posição, fundo com código,
+ * e catálogo de projetos por categoria (GitHub + backoffice Supabase).
  */
 
 (function () {
@@ -10,7 +11,7 @@
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // ----- F5: manter posição do scroll (evitar voltar ao topo/baixo) -----
+  // ----- F5: manter posição do scroll -----
   function saveScroll() {
     try { sessionStorage.setItem('portfolioScroll', String(window.scrollY)); } catch (e) {}
   }
@@ -80,14 +81,14 @@
     { text: '<div class="card">', type: 'html' },
     { text: '<section id="hero">', type: 'html' },
     { text: 'export default function Page()', type: 'js' },
+    { text: 'local plr = game.Players.LocalPlayer', type: 'lua' },
+    { text: 'task.wait(0.1)', type: 'lua' },
     { text: '.container { max-width: 960px }', type: 'css' },
-    { text: 'border-radius: var(--radius)', type: 'css' },
     { text: 'transition: opacity 0.4s ease', type: 'css' },
     { text: 'def index(request):', type: 'py' },
     { text: 'import pandas as pd', type: 'py' },
-    { text: 'SELECT * FROM users', type: 'sql' },
+    { text: 'SELECT * FROM projects', type: 'sql' },
     { text: 'GROUP BY category', type: 'sql' },
-    { text: 'CREATE TABLE projects', type: 'sql' },
   ];
 
   function initCodeBackground() {
@@ -118,18 +119,24 @@
   initCodeBackground();
 
   // ===================================================================
-  //  PROJETOS — GitHub + Supabase (backoffice)
-  //  Junta automaticamente os repositórios do GitHub com os ajustes do
-  //  backoffice (descrições, marcadores/badges, destaques, projetos
-  //  manuais de Vercel/Cloudflare e itens ocultos).
+  //  PROJETOS — GitHub + Supabase (backoffice), agrupados por categoria
   // ===================================================================
   var CFG = window.PORTFOLIO_CONFIG || {};
   var GITHUB_USER = CFG.githubUser || 'isaquefl';
-  var projectsList = document.getElementById('projects-list');
   var projectsLoading = document.getElementById('projects-loading');
   var featuredWrap = document.getElementById('projects-featured');
-  var reposTitleEl = document.getElementById('projects-repos-title');
+  var categoriesWrap = document.getElementById('projects-categories');
   var reposSubtitleEl = document.getElementById('projects-repos-subtitle');
+
+  // Categorias padrão (fallback caso o Supabase não responda).
+  var FALLBACK_CATEGORIES = [
+    { slug: 'sites', label: 'Sites & Aplicações', description: 'Aplicações web completas, em produção.', icon: 'icon-globe', position: 1 },
+    { slug: 'tools', label: 'Ferramentas & Frameworks', description: 'Bibliotecas e ferramentas open-source reutilizáveis.', icon: 'icon-terminal', position: 2 },
+    { slug: 'gamedev', label: 'Game Dev & Roblox', description: 'Jogos e ferramentas em Lua/Luau e modelagem 3D.', icon: 'icon-cube', position: 3 },
+    { slug: 'ai', label: 'IA & Data / Scrapers', description: 'Integrações de LLM, geração de conteúdo e coleta de dados.', icon: 'icon-code', position: 4 },
+    { slug: 'automation', label: 'Automação & Bots', description: 'Bots e automações ponta-a-ponta (Discord, WhatsApp, Telegram).', icon: 'icon-server', position: 5 }
+  ];
+  var OTHERS = { slug: '__others', label: 'Mais projetos', description: 'Outros repositórios públicos.', icon: 'icon-code', position: 999 };
 
   function escapeHtml(text) {
     var div = document.createElement('div');
@@ -145,7 +152,6 @@
     return months[d.getMonth()] + '/' + d.getFullYear();
   }
 
-  // Detecta onde o projeto está hospedado a partir da URL (para o marcador).
   function hostBadge(url) {
     if (!url) return null;
     if (/vercel\.app/i.test(url)) return { label: 'Vercel', color: 'slate' };
@@ -164,7 +170,14 @@
     return html ? '<div class="project-badges">' + html + '</div>' : '';
   }
 
-  // Constrói um card de projeto (usado para destaques e repositórios).
+  function techHtml(tech) {
+    if (!tech || !tech.length) return '';
+    var html = tech.map(function (t) {
+      return t ? '<span class="project-tech-item">' + escapeHtml(t) + '</span>' : '';
+    }).join('');
+    return html ? '<div class="project-tech">' + html + '</div>' : '';
+  }
+
   function buildCard(p) {
     var hasLink = !!p.url;
     var card = document.createElement(hasLink ? 'a' : 'article');
@@ -173,10 +186,6 @@
       card.href = p.url;
       card.target = '_blank';
       card.rel = 'noopener noreferrer';
-    }
-    if (p.description) {
-      card.setAttribute('data-tooltip', p.description);
-      card.classList.add('has-tooltip');
     }
 
     var meta = [];
@@ -189,15 +198,17 @@
     card.innerHTML =
       '<span class="project-name">' + escapeHtml(p.title) + '</span>' +
       badgesHtml(p.badges) +
+      (p.subtitle ? '<p class="project-subtitle">' + escapeHtml(p.subtitle) + '</p>' : '') +
       (p.description ? '<p class="project-desc">' + escapeHtml(p.description) + '</p>' : '') +
+      techHtml(p.tech) +
       (meta.length ? '<div class="project-meta">' + meta.join('') + '</div>' : '');
     return card;
   }
 
-  // Busca os dados do backoffice (Supabase REST). Falha de forma segura.
+  // Busca dados do backoffice (Supabase REST). Falha de forma segura.
   function fetchOverrides() {
     if (!CFG.supabaseUrl || !CFG.supabaseAnonKey) {
-      return Promise.resolve({ projects: [], settings: {} });
+      return Promise.resolve({ projects: [], settings: {}, categories: [] });
     }
     var headers = { apikey: CFG.supabaseAnonKey, Authorization: 'Bearer ' + CFG.supabaseAnonKey };
     var base = CFG.supabaseUrl.replace(/\/$/, '');
@@ -205,9 +216,15 @@
       .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
     var sReq = fetch(base + '/rest/v1/settings?key=eq.site&select=value', { headers })
       .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
-    return Promise.all([pReq, sReq]).then(function (res) {
+    var cReq = fetch(base + '/rest/v1/portfolio_categories?select=*&visible=eq.true&order=position.asc', { headers })
+      .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    return Promise.all([pReq, sReq, cReq]).then(function (res) {
       var settings = (Array.isArray(res[1]) && res[1][0] && res[1][0].value) || {};
-      return { projects: Array.isArray(res[0]) ? res[0] : [], settings: settings };
+      return {
+        projects: Array.isArray(res[0]) ? res[0] : [],
+        settings: settings,
+        categories: Array.isArray(res[2]) ? res[2] : []
+      };
     });
   }
 
@@ -215,7 +232,7 @@
     return fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?sort=updated&per_page=100&type=owner')
       .then(function (r) { return r.ok ? r.json() : []; })
       .then(function (d) { return Array.isArray(d) ? d.filter(function (x) { return !x.fork; }) : []; })
-      .catch(function () { return null; }); // null = erro de rede; [] = vazio
+      .catch(function () { return null; });
   }
 
   function setText(id, value) {
@@ -237,12 +254,10 @@
   }
 
   function applySettings(settings) {
-    if (reposTitleEl && settings.reposTitle) reposTitleEl.textContent = settings.reposTitle;
     if (reposSubtitleEl && settings.reposSubtitle) reposSubtitleEl.textContent = settings.reposSubtitle;
     var fTitle = document.getElementById('projects-featured-title');
     if (fTitle && settings.featuredTitle) fTitle.textContent = settings.featuredTitle;
 
-    // ----- Conteúdo do site (tudo editável pelo backoffice) -----
     var hero = settings.hero || {};
     setText('hero-name', hero.name);
     setText('hero-role', hero.role);
@@ -250,7 +265,6 @@
     setText('hero-cta', hero.ctaText);
 
     var about = settings.about || {};
-    // permite **negrito** simples no texto do sobre
     if (about.pt) setHtml('about-pt', mdBold(about.pt));
     if (about.en) setHtml('about-en', mdBold(about.en));
 
@@ -287,10 +301,9 @@
     if (settings.showGithubRepos !== false && Array.isArray(repos)) {
       repos.forEach(function (repo) {
         var ov = byRepo[repo.name.toLowerCase()] || {};
-        if (ov.hidden) return; // ocultado no backoffice
+        if (ov.hidden) return;
         var live = ov.url || repo.homepage || '';
         var badges = (ov.badges && ov.badges.length) ? ov.badges.slice() : [];
-        // Marcador automático "Online" para projetos com deploy.
         if (live) {
           var hb = hostBadge(live);
           if (!badges.some(function (b) { return b && /online/i.test(b.label); })) {
@@ -300,11 +313,14 @@
         }
         items.push({
           title: ov.title || repo.name,
+          subtitle: ov.subtitle || '',
           description: ov.description || repo.description || '',
           url: live || repo.html_url,
           repo_url: repo.html_url,
           language: ov.language || repo.language || '',
           badges: badges,
+          tech: ov.tech || [],
+          category: ov.category || null,
           featured: !!ov.featured,
           position: typeof ov.position === 'number' ? ov.position : 1000,
           date: repo.updated_at
@@ -318,15 +334,21 @@
       var badges = (m.badges && m.badges.length) ? m.badges.slice() : [];
       if (m.url) {
         var hb = hostBadge(m.url);
+        if (!badges.some(function (b) { return b && /online/i.test(b.label); })) {
+          badges.unshift({ label: 'Online', color: 'green' });
+        }
         if (hb && !badges.some(function (b) { return b && b.label === hb.label; })) badges.push(hb);
       }
       items.push({
         title: m.title || m.key,
+        subtitle: m.subtitle || '',
         description: m.description || '',
         url: m.url || '',
         repo_url: m.repo_url || '',
         language: m.language || '',
         badges: badges,
+        tech: m.tech || [],
+        category: m.category || null,
         featured: !!m.featured,
         position: typeof m.position === 'number' ? m.position : 0,
         date: m.updated_at
@@ -337,11 +359,15 @@
     return items;
   }
 
-  function render(items) {
+  function iconSvg(id) {
+    return '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><use href="#' + escapeHtml(id || 'icon-code') + '"/></svg>';
+  }
+
+  function render(items, categories) {
     var featured = items.filter(function (i) { return i.featured; });
     var normal = items.filter(function (i) { return !i.featured; });
 
-    // Destaques
+    // ----- Destaques -----
     var featuredTitle = document.getElementById('projects-featured-title');
     if (featuredWrap) {
       featuredWrap.innerHTML = '';
@@ -349,42 +375,85 @@
     }
     if (featuredTitle) featuredTitle.style.display = featured.length ? '' : 'none';
 
-    // Repositórios / demais
-    if (projectsList) {
-      projectsList.innerHTML = '';
-      if (!normal.length && !featured.length) {
-        projectsList.innerHTML = '<p class="projects-empty">Nenhum projeto ainda. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
-        return;
-      }
-      normal.forEach(function (p) { projectsList.appendChild(buildCard(p)); });
+    // ----- Categorias -----
+    if (!categoriesWrap) return;
+    categoriesWrap.innerHTML = '';
+
+    var cats = (categories && categories.length) ? categories.slice() : FALLBACK_CATEGORIES.slice();
+    cats.sort(function (a, b) { return (a.position || 0) - (b.position || 0); });
+
+    // Agrupa os itens não-destacados por categoria.
+    var groups = {};
+    normal.forEach(function (it) {
+      var key = it.category || OTHERS.slug;
+      (groups[key] = groups[key] || []).push(it);
+    });
+
+    var order = cats.slice();
+    if (groups[OTHERS.slug]) order.push(OTHERS);
+
+    var rendered = 0;
+    order.forEach(function (cat) {
+      var list = groups[cat.slug];
+      if (!list || !list.length) return;
+      rendered++;
+
+      var section = document.createElement('div');
+      section.className = 'category-section';
+      section.setAttribute('data-animate', '');
+
+      var header = document.createElement('div');
+      header.className = 'category-header';
+      header.innerHTML =
+        '<span class="category-icon">' + iconSvg(cat.icon) + '</span>' +
+        '<div class="category-heading">' +
+          '<h4 class="category-label">' + escapeHtml(cat.label) +
+            ' <span class="category-count">' + list.length + '</span></h4>' +
+          (cat.description ? '<p class="category-desc">' + escapeHtml(cat.description) + '</p>' : '') +
+        '</div>';
+      section.appendChild(header);
+
+      var grid = document.createElement('div');
+      grid.className = 'projects-grid';
+      list.forEach(function (p) { grid.appendChild(buildCard(p)); });
+      section.appendChild(grid);
+
+      categoriesWrap.appendChild(section);
+      // re-observa para animação
+      if (window.__io) window.__io.observe(section);
+    });
+
+    if (!rendered && !featured.length) {
+      categoriesWrap.innerHTML = '<p class="projects-empty">Nenhum projeto ainda. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
     }
+    if (projectsLoading && projectsLoading.parentNode) projectsLoading.remove();
   }
 
-  if (projectsList) {
+  if (categoriesWrap || featuredWrap) {
     Promise.all([fetchRepos(), fetchOverrides()]).then(function (res) {
       var repos = res[0];
       var data = res[1];
       applySettings(data.settings || {});
       if (repos === null && (!data.projects || !data.projects.length)) {
         if (projectsLoading && projectsLoading.parentNode) projectsLoading.remove();
-        projectsList.innerHTML = '<p class="projects-empty">Não foi possível carregar os projetos agora. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
+        if (categoriesWrap) {
+          categoriesWrap.innerHTML = '<p class="projects-empty">Não foi possível carregar os projetos agora. <a href="https://github.com/' + GITHUB_USER + '?tab=repositories" target="_blank" rel="noopener noreferrer">Ver no GitHub</a>.</p>';
+        }
         return;
       }
-      render(buildList(repos || [], data));
+      render(buildList(repos || [], data), data.categories);
     });
   }
 
   // ----- Animações no scroll (moderadas) -----
-  var animated = document.querySelectorAll('[data-animate]');
-  if (animated.length) {
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible');
-        });
-      },
-      { rootMargin: '0px 0px -50px 0px', threshold: 0.08 }
-    );
-    animated.forEach(function (el) { observer.observe(el); });
-  }
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) entry.target.classList.add('is-visible');
+      });
+    },
+    { rootMargin: '0px 0px -50px 0px', threshold: 0.08 }
+  );
+  window.__io = observer;
+  document.querySelectorAll('[data-animate]').forEach(function (el) { observer.observe(el); });
 })();
