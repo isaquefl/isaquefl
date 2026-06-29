@@ -68,8 +68,33 @@
 |---|---|---|---|
 | **[EcoBH](https://github.com/isaquefl/ecobh)** | Mapa de pontos de descarte correto em BH | React · Leaflet | [🌐](https://ecobh.vercel.app) |
 | **[EasyTask](https://github.com/isaquefl/easytask-site)** | Controle financeiro com IA (PT/EN) | Next.js · IA | [🌐](https://easytaskbetter.vercel.app) |
-| **[Contextly](https://github.com/isaquefl/Contextly)** | Leitura de documentos com IA (RAG) | Next.js · LLM | — |
+| **[Contextly](https://github.com/isaquefl/Contextly)** | Leitura de documentos com IA (RAG) | Next.js · LLM | [🌐](https://contextly-flame.vercel.app) |
 | **[Atmos](https://github.com/isaquefl/Atmos)** | Dashboard de clima em tempo real | TypeScript | [🌐](https://atmos-pearl.vercel.app) |
+
+---
+
+### 🧰 Ferramentas, Forks & Open Source
+
+**🤖 Automação & Bots**
+
+[![discord-bot-forge](https://img.shields.io/badge/discord--bot--forge-5865F2?style=flat-square&logo=discord&logoColor=white)](https://github.com/isaquefl/discord-bot-forge)
+[![discord-sales-bot](https://img.shields.io/badge/discord--sales--bot-5865F2?style=flat-square&logo=discord&logoColor=white)](https://github.com/isaquefl/discord-sales-bot)
+[![discord-oauth-gatekeeper](https://img.shields.io/badge/discord--oauth--gatekeeper-5865F2?style=flat-square&logo=discord&logoColor=white)](https://github.com/isaquefl/discord-oauth-gatekeeper)
+[![akame-bot](https://img.shields.io/badge/akame--bot-5865F2?style=flat-square&logo=discord&logoColor=white)](https://github.com/isaquefl/akame-bot)
+
+**🧠 IA & Conteúdo**
+
+[![ai-content-studio](https://img.shields.io/badge/ai--content--studio-F55036?style=flat-square&logo=meta&logoColor=white)](https://github.com/isaquefl/ai-content-studio)
+[![Contextly](https://img.shields.io/badge/Contextly-000000?style=flat-square&logo=openai&logoColor=white)](https://github.com/isaquefl/Contextly)
+
+**🎮 Game Dev**
+
+[![roblox-dev-toolkit](https://img.shields.io/badge/roblox--dev--toolkit-00A2FF?style=flat-square&logo=robloxstudio&logoColor=white)](https://github.com/isaquefl/roblox-dev-toolkit)
+
+**🛠️ Frameworks & Kits**
+
+[![landing-kit](https://img.shields.io/badge/landing--kit-646CFF?style=flat-square&logo=vite&logoColor=white)](https://github.com/isaquefl/landing-kit)
+[![scrape-kit](https://img.shields.io/badge/scrape--kit-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://github.com/isaquefl/scrape-kit)
 
 > 🔎 Catálogo completo, organizado por categoria, no
 > **[portfólio](https://isaquefl.vercel.app/#projetos)**.
