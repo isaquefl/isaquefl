@@ -115,8 +115,8 @@
 
 ### 📊 Estatísticas e Atividade do GitHub
 
-![GitHub Stats](https://github-stats-extended.vercel.app/api?username=isaquefl&show_icons=true&hide_border=true&theme=dark&icon_color=2e9bff&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
-![Top Languages](https://github-stats-extended.vercel.app/api/top-langs/?username=isaquefl&layout=compact&hide_border=true&theme=dark&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
+![GitHub Stats](./generated/github-stats.svg)
+![Top Languages](./generated/top-langs.svg)
 
 ![GitHub Streak](https://streak-stats.demolab.com/?user=isaquefl&theme=dark&hide_border=true&background=0a0a0a&ring=2e9bff&fire=2e9bff)
 
