@@ -13,13 +13,12 @@
 
 ---
 
-> 💬 **Construo sistemas escaláveis, do banco de dados ao pixel.**
-> Da API ao deploy, com código limpo e foco em performance.
+> 💻 **Desenvolvedor Full Stack focado em criar aplicações web escaláveis, bots inteligentes e jogos interativos.**
+> Traduzo ideias complexas em código limpo, arquitetura sólida e interfaces excepcionais.
 
-> 💬 **Misturo web, jogos e IA.** Sites e plataformas em produção, jogos em
-> Roblox (Lua/Luau), modelagem 3D e integrações com LLMs (Groq/Llama, OpenAI).
+> 🧠 **Integrações de IA & Game Dev:** Desenvolvimento de soluções com Large Language Models (Groq/Llama, OpenAI) e criação de experiências e sistemas de jogos no Roblox (Lua/Luau).
 
-> 💬 **Performance-first, TypeScript estrito, design que parece produto de verdade.**
+> ⚡ **Foco em performance, código legível e design orientado a produto.**
 
 ---
 
@@ -35,15 +34,26 @@
 ### 🛠️ Stack
 
 **Frontend**
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=flat-square&logo=angular&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 
 **Backend**
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white)
+![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)
+![Java](https://img.shields.io/badge/Java-007396?style=flat-square&logo=java&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=c-sharp&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-00758F?style=flat-square&logo=mysql&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
 
@@ -103,8 +113,12 @@
 
 <div align="center">
 
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=isaquefl&show_icons=true&hide_border=true&theme=dark&icon_color=2e9bff&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=isaquefl&layout=compact&hide_border=true&theme=dark&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
+### 📊 Estatísticas e Atividade do GitHub
+
+![GitHub Stats](https://github-stats-extended.vercel.app/api?username=isaquefl&show_icons=true&hide_border=true&theme=dark&icon_color=2e9bff&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
+![Top Languages](https://github-stats-extended.vercel.app/api/top-langs/?username=isaquefl&layout=compact&hide_border=true&theme=dark&title_color=f5f5f5&text_color=a3a3a3&bg_color=0a0a0a)
+
+![GitHub Streak](https://streak-stats.demolab.com/?user=isaquefl&theme=dark&hide_border=true&background=0a0a0a&ring=2e9bff&fire=2e9bff)
 
 </div>
 
